@@ -1,13 +1,13 @@
 ---
 title: "Assignment 2 - Methods 4"
-author: "Laurits Lyngbaek"
+author: "study group 18"
 date: "2025-03-18"
 output: html_document
 ---
 # Second assignment
 The second assignment uses chapter 3, 5 and 6. The focus of the assignment is getting an understanding of causality.
 
-##  Chapter 3: Causal Confussion - Regitze
+##  Chapter 3: Causal Confussion - by Regitze Hammer Holt
 **Reminder: We are tying to estimate the probability of giving birth to a boy**
 I have pasted a working solution to questions 6.1-6.3 so you can continue from here:)
 
@@ -47,42 +47,32 @@ Now compare 10,000 counts of boys from 100 simulated first borns only to the num
 
 ```{r 3h4}
 
-#3H4
-#boys of firth birth
-W_first <- sum(birth1)
-N_first <- length(birth1)
-
-#simulating
-simulated_first_births <- rbinom(n = 1e4, size = N_first, prob = samples)
-
-#plotting simulated first-births
-dens(simulated_first_births, show.HPDI = 0.95, adj = 1)
-abline(v = W_first, col = "red")
-title("Simulated first-born boys in 100 births - red line is real value")
+simulated_first_borns <- rbinom(n = 1e4, size = 100, prob = samples)
+W_first_born <- sum(birth1)
+rethinking::dens(simulated_first_borns, show.HPDI = 0.95)
+abline(v = W_first_born, col = "red")
+title("Simulated number of boys in 100 first-borns - red line is actual count")
 
 ```
 
+*Answer:* From the plot, we see that the observed number of first-born boys was approximately 51 out of 100 births. However, the simulated density seems to be skewed to the right of this value, indicating that the model tends to predict more boys than observed in the actual data. This differs from the previous plot where the distribution was more centered around the observed value. This suggests that the model performs less well when we subset the data to only the first-borns. This indicates that proportionally more boys were born as second-borns than first-borns. Nevertheless, the model's predictions are not drastically off, as the observed count is still within the range of plausible outcomes in the simulated distribution.
 
 **3H5.** 
 The model assumes that sex of first and second births are independent. To check this assumption, focus now on second births that followed female first borns. Compare 10,000 simulated counts of boys to only those second births that followed girls. To do this correctly, you need to count the number of first borns who were girls and simulate that many births, 10,000 times. Compare the counts of boys in your simulations to the actual observed count of boys following girls. How does the model look in this light? Any guesses what is going on in these data?
 
-```{r}
+```{r 3h5}
 
-#count first-born girls and boys after girls
-N_girls_first <- sum(birth1 == 0)
-W_boyaftergirl <- sum(birth1 == 0 & birth2 == 1)
-
-#simulating second boys after girls
-simulated_boy_after_girl <- rbinom(n = 1e4, size = N_girls_first, prob = samples)
-
-#plotting
-dens(simulated_boy_after_girl, show.HPDI = 0.95, adj = 1)
-abline(v = W_boyaftergirl, col = "red")
-title("Simulated second-born boys after girls - red line is real value")
+set.seed(1)
+count_g_then_b <- sum(birth1 == 0 & birth2 == 1)
+n_first_born_girls <- 100-sum(birth1)
+simulated_girl_then_boy <- rbinom(n = 1e4, size = n_first_born_girls , prob = samples)
+rethinking::dens(simulated_girl_then_boy, show.HPDI = 0.95, adj = 1)
+abline(v = count_g_then_b, col = "red")
+title("Simulated number of boys born after a girl")
 
 ```
 
-*Answer*: The distribution of boy being born aftern first-born girls in the simulation is much lower than the actual observation. This could mean that the order in which boys and girls are being born are not indipendent from each other, but a boy being born after a girl is more probable than just a boy being born as the first-born.
+*Answer*: The actual count of boys born after a girl is outside the range of a plausible counts from the simulated model. Therefore, the model doesn't perform well when sub-setting the data. The plot indicates that for the actual observed values, it is more likely getting a boy after a girl than for the simulated data, hence the variables are not independent from each other. 
 
 ## Chapter 5: Spurrious Correlations
 Start of by checking out all the spurrious correlations that exists in the world.
@@ -90,37 +80,26 @@ Some of these can be seen on this wonderful website: https://www.tylervigen.com/
 All the medium questions are only asking you to explain a solution with words, but feel free to simulate the data and prove the concepts.
 
 
-**5M1**. - Katrine
+**5M1**. - by Katrine Tikjøb Wøldike
 Invent your own example of a spurious correlation. An outcome variable should be correlated
 with both predictor variables. But when both predictors are entered in the same model, the correlation
 between the outcome and one of the predictors should mostly vanish (or at least be greatly reduced).
 
-Number of people with bad breath -> number of burn victims int he hospital
-
-But in reality
-Number of people drinking coffee -> number of burn victims in the hospital
-Number of people drinking coffee -> number of people with bad breath
-
+*Answer:* A spurious correlation could be something like a correlation between the number of students that are tired before a school day and the number of students who have bad breath. This seems at first sight unrelated and spurious, since tiredness doesn't lead to bad breath. However, there is also a correlation between having bad breath and the predictor of drinking coffee - when the students are more tired, they will probably drink more coffee, leading to bad breath. When coffee drinking is then included in the model, level of sleep might lose its influence as a predictor.
  
-**5M2**. - Rahel
+**5M2**. - by Rahel Meyer-Stromfeldt 
 Invent your own example of a masked relationship. An outcome variable should be correlated
 with both predictor variables, but in opposite directions. And the two predictor variables should be
 correlated with one another.
 
-Number of sunny days -> number of flowers on the field
-Number of windy days -> number of flowers on the field
-Number of sunny days <-> number of windy days
+*Answer*: An example for a masked relationship is predicting mood, by sleep deprivation and partying. Sleep derivation is negatively affecting mood.On the other side (we assume that) partying is positively affecting mood. Since partying is can cause sleep derivation, these variables will correlate. Therefore, the effect of the predictors will even each other out and be masked when only one of them is included in the model.
 
+**5M3**. - by Regitze Hammer Holt
+An example for a masked relationship is predicting mood, by sleep deprivation and partying. Sleep derivation is negatively affecting mood.On the other side (we assume that) partying is positively affecting mood. Since partying is can cause sleep derivation, these variables will correlate. Therefore, the effect of the predictors will even each other out and be masked when only one of them is included in the model.
 
-**5M3**. - Regitze
-It is sometimes observed that the best predictor of fire risk is the presence of firefighters—
-States and localities with many firefighters also have more fires. Presumably firefighters do not cause
-fires. Nevertheless, this is not a spurious correlation. Instead fires cause firefighters. Consider the
-same reversal of causal inference in the context of the divorce and marriage data. How might a high
-divorce rate cause a higher marriage rate? Can you think of a way to evaluate this relationship, using
-multiple regression
+*Answer:* When people divorce they can marry again. Also divorces requires for a marriage to have occurred in the first place, hence having more marriages enlarge the space for potential divorces, just like how more fires requires more firefighters. Worded differently: fires are prerequisite for firefighters, and marriages are prerequisite for divorces. To model it with multiple regression, we can change the outcome to be marriage rate an the predictor to be divorce rate. We can add in predictors like religion (assuming religious beliefs may effect divorce), or age of getting married which may say something about how liberal a society is.
 
-**5M5**. - Sári
+**5M5**. - Sára Fernezelyi
 One way to reason through multiple causation hypotheses is to imagine detailed mechanisms
 through which predictor variables may influence outcomes. For example, it is sometimes argued that
 the price of gasoline (predictor variable) is positively associated with lower obesity rates (outcome
@@ -165,7 +144,7 @@ From this we can conclude:
 
 Looking at the two paths we can see that driving has the same explanatory value in both, so we can just create a multiple regression with the outcome being obesity rate, an intercept, a beta estimate multiplied by a measure of how much people exercise by walking, a beta estimate multiplied by a measure of how much people eat out, and a beta estimate multiplied by the price of gasoline. By looking at the mean estimates of the beta parameters we can check which predictor describes the correlation better. We can also create a full-model, combining beta estimates of gas prices, eating out and exercise, so we can see if it is really through these paths that obesity is mediated.
 
-## Chapter 5: Foxes and Pack Sizes - Rahel
+## Chapter 5: Foxes and Pack Sizes - by Rahel Meyer-Stromfeldt
 All five exercises below use the same data, data(foxes) (part of rethinking).84 The urban fox (Vulpes vulpes) is a successful exploiter of human habitat. Since urban foxes move in packs and defend territories, data on habitat quality and population density is also included. The data frame has five columns:
 (1) group: Number of the social group the individual fox belongs to
 (2) avgfood: The average amount of food available in the territory
@@ -177,139 +156,194 @@ All five exercises below use the same data, data(foxes) (part of rethinking).84 
 Fit two bivariate Gaussian regressions, using quap: (1) body weight as a linear function of territory size (area), and (2) body weight as a linear function of groupsize. Plot the results of these regressions, displaying the MAP regression line and the 95% interval of the mean. Is either variable important for predicting fox body weight?
 ```{r 5H1}
 
-#loading data
-library(rethinking)
-data("foxes")
-data <- foxes
+data(foxes)
+head(foxes)
+d <- list()
 
-data$W <- scale(data$weight)
-data$T <- scale(data$area)
-data$G <- scale(data$group)
+# since we want to compare effect sizes of different variables, it makes sense to scale them fisrt
 
 
-#modelling weight from territory size
-model_5h1_1 <- quap(
+d$area <- scale(foxes$area)
+d$groupsize <- scale(foxes$groupsize)
+d$avgfood <-  scale(foxes$avgfood)
+d$weight <- scale(foxes$weight)
+
+# linear model of body weight predicted by territory size
+
+m_area <- quap(
   alist(
-    W ~ dnorm(mu, sigma),
-    mu <- a + bT*T,
-    a ~ dnorm(0, 0.2),
-    bT ~ dnorm(0, 0.5),
+    weight ~ dnorm(mu, sigma),
+    mu <- a + b_area *area,
+    a ~ dnorm(0, 5),   
+    b_area ~ dnorm (0, 0.5),
     sigma ~ dexp(1)
-  ), data = data
-)
+  ), data = d )
+precis(m_area)
 
-#modelling weight from groupsize
-model_5h1_2 <- quap(
+# model for body weight predicted by groupsize !! probably wrong because groupsize is categorical!!
+
+m_groupsize <- quap(
   alist(
-    W ~ dnorm(mu, sigma),
-    mu <- a + bG*G,
-    a ~ dnorm(0, 0.2),
-    bG ~ dnorm(0, 0.5),
+    weight ~ dnorm(mu, sigma),
+    mu <- a + b_groupsize *groupsize,
+    a ~ dnorm(0, 10),   # plausible priors after plotting different options
+    b_groupsize~ dnorm (0, 0.5),   # random prior
     sigma ~ dexp(1)
-  ), data = data
-)
+  ), data = d )
+precis(m_groupsize)
 
-#plotting
-xseq <- seq(from=-2, to=2, length.out=30) #checked range of weights
-mu <- link( model_5h1_1, data=list(T=xseq))
-mu_mean <- apply(mu,2,mean)
-mu_PI <- apply(mu,2,PI)
-plot( W ~ T , data=data )
-lines( xseq , mu_mean , lwd=2 )
-shade( mu_PI , xseq )
+area_seq <- seq(-4,4, by = 0.1)
+groupsize_seq <- seq(-4,4, by = 0.1)
+# # simulate and plot prior regression lines to find reasonable priors
+prior <- extract.prior(m_area)
+mu <- link(m_area , post = prior, data = list(area = area_seq))
+plot( NULL , xlim= range(area_seq) , ylim= range(area_seq), xlab = "territory size", ylab = "weight")
+for ( i in 1:50 ) lines( area_seq , mu[i,] , col=col.alpha("black",0.4) )
 
-xseq <- seq(from=-2, to=2, length.out=30) #checked range of weights
-mu <- link( model_5h1_2, data=list(G=xseq))
-mu_mean <- apply(mu,2,mean)
-mu_PI <- apply(mu,2,PI)
-plot( W ~ G , data=data )
-lines( xseq , mu_mean , lwd=2 )
-shade( mu_PI , xseq )
+# same for groupsize: 
+prior <- extract.prior(m_groupsize)
+mu <- link(m_groupsize , post = prior, data = list(groupsize = groupsize_seq))
+plot( NULL , xlim= range(groupsize_seq) , ylim= range(groupsize_seq), xlab = "groupsize", ylab = "weight")
+for ( i in 1:50 ) lines( area_seq , mu[i,] , col=col.alpha("black",0.4) )
+
+## link to compute mean
+mu <- link(m_area, data = data.frame(area = area_seq))
+# summarize distribution of mu
+mu.mean <-  apply(mu,2,mean)
+mu.PI <- apply(mu,2,PI, prob = 0.89)
+# plot raw  data
+plot(weight ~ area, data = d,
+     main = "bodyweight vs territory size plotted")
+
+# add shaded area for 89% interval
+shade(mu.PI, area_seq )
+
+# add MAP line
+lines(area_seq, mu.mean, col = "red")
+# add a legend to not get confused
+legend("topleft",legend = c("raw data (standardized", "MAP regression line mean", "95% interval mean"), col = c("black","red", "grey"), lty = 1, pch = 1, bty = "n")
+
+# and same for groupsize
+
+
+## link to compute mean
+mu <- link(m_groupsize, data = data.frame(groupsize = groupsize_seq))
+# summarize distribution of mu
+mu.mean <-  apply(mu,2,mean)
+mu.PI <- apply(mu,2,PI, prob = 0.89)
+# plot raw  data
+plot(weight ~ groupsize, data = d,
+     main = "bodyweight vs groupsize plotted")
+
+# add shaded area for 89% interval
+shade(mu.PI, groupsize_seq )
+
+# add MAP line
+lines(groupsize_seq, mu.mean, col = "red")
+# add a legend to not get confused
+legend("topleft",legend = c("raw data (standardized", "MAP regression line mean", "95% interval mean"), col = c("black","red", "grey"), lty = 1, pch = 1, bty = "n")
 
 ```
+
+*Answer:* Both variables show rather flat regression lines, with fairly narrow 95% intervals.  Looking at the data and the spread of it, both variables seem to be unimportant to predict weight.
 
 **5H2.**
 Now fit a multiple linear regression with weight as the outcome and both area and groupsize as predictor variables. Plot the predictions of the model for each predictor, holding the other predictor constant at its mean. What does this model say about the importance of each variable? Why do you get different results than you got in the exercise just above?
-```{r}
+```{r 5h2}
 
-#modelling with both predictors
-model_5h2 <- quap(
+# multivariate regression
+m_5.2 <- quap(
   alist(
-    W ~ dnorm(mu, sigma),
-    mu <- a + bG*G + bT*T,
-    a ~ dnorm(0, 0.2),
-    bG ~ dnorm(0, 0.5),
-    bT ~ dnorm(0, 0.5),
+    weight ~ dnorm(mu, sigma),
+    mu <- a + b_area* area + b_groupsize*groupsize,
+    a ~ dnorm(0,10),
+    b_area ~ dnorm (0, 0.5),
+    b_groupsize ~ dnorm(0,0.5),
     sigma ~ dexp(1)
-  ), data = data
-)
+  ), data = d)
+precis(m_5.2)
 
-#plotting for each predictor
-xseq <- seq( from=-2 , to=2 , length.out=30 )
-mu <- link( model_5h2 , data=data.frame( G=xseq , T=0 ) )
-mu_mean <- apply(mu,2,mean)
-mu_PI <- apply(mu,2,PI)
-plot( NULL , xlim=range(data$G) , ylim=range(-1.5, 1.5) )
-lines( xseq , mu_mean , lwd=2 )
-shade( mu_PI , xseq )
+# plot coefficients against each other: ??????
+plot(coeftab(m_area, m_groupsize, m_5.2), pars = c("b_area", "b_groupsize"))
 
-#plotting for each predictor
-xseq <- seq( from=-2 , to=2 , length.out=30 )
-mu <- link( model_5h2 , data=data.frame( T=xseq , G=0 ) )
-mu_mean <- apply(mu,2,mean)
-mu_PI <- apply(mu,2,PI)
-plot( NULL , xlim=range(data$T) , ylim=range(-1.5, 1.5) )
-lines( xseq , mu_mean , lwd=2 )
-shade( mu_PI , xseq )
+# create means: 
+groupsize_mean = mean(d$groupsize)
+area_mean = mean(d$area)
+# sim data for area holding groupsize 0
+sim_dat_area<- data.frame(area = area_seq, groupsize = groupsize_mean)
+s_area <- sim(m_5.2, data = sim_dat_area, vars = c("weight"))
+# sim data for groupsize holding area 0
+sim_dat_groupsize <- data.frame(groupsize = groupsize_seq, area = area_mean)
+s_groupsize <- sim(m_5.2, data = sim_dat_groupsize, vars = c("weight"))
+
+plot(sim_dat_area$area, colMeans(s_area), ylim = c(-2,2), type = "l",
+     xlab = "area size", ylab = "weight")
+shade( apply(s_area,2,PI), sim_dat_area$area)
+mtext("weigth predictions for area with groupsize constant at mean")
+
+plot(sim_dat_groupsize$groupsize, colMeans(s_groupsize), ylim = c(-2,2), type = "l",
+     xlab = "groupsize", ylab = "weight")
+shade( apply(s_groupsize,2,PI), sim_dat_groupsize$groupsize)
+mtext("weigth predictions for groupsize with area constant at mean")
 
 ```
+
+*Answer:* This model shows that the variables are both predictors for bodyweight but with effects in opposite directions. Therefore they are confounders when only one of them is included in the model. Groupsize seems to have a negative effect (mean = -0.48) on weight, whereas area has a positive effect (mean = 0.41). Judging by its now bigger effect and compared to that smaller standard deviation both predictors are important. The reason this was not seen in the model above is, that we did not include both predictors, creating a masked relationship. 
 
 **5H3.**
 Finally, consider the avgfood variable. Fit two more multiple regressions: (1) body weight as an additive function of avgfood and groupsize, and (2) body weight as an additive function of all three variables, avgfood and groupsize and area. Compare the results of these models to the previous models you’ve fit, in the first two exercises. (a) Is avgfood or area a better predictor of body weight? If you had to choose one or the other to include in a model, which would it be? Support your assessment with any tables or plots you choose. (b) When both avgfood or area are in the same model, their effects are reduced (closer to zero) and their standard errors are larger than when they are included in separate models. Can you explain this result?
 
-```{r}
+```{r 5h3}
 
-data$F <- scale(data$avgfood)
+# 1. multiple regression of body weight predicted by avg food and groupsize 
 
-#fitting models
-model_5h3_1 <- quap(
+
+m_5.3.1 <- quap(
   alist(
-    W ~ dnorm(mu, sigma),
-    mu <- a + bG*G + bF*F,
-    a ~ dnorm(0, 0.2),
-    bG ~ dnorm(0, 0.5),
-    bF ~ dnorm(0, 0.5),
+    weight ~ dnorm(mu, sigma),
+    mu <- a + b_avgfood*avgfood + b_groupsize*groupsize,
+    a ~ dnorm(0,5),
+    b_avgfood ~ dnorm (0, 0.5),
+    b_groupsize ~ dnorm(0,0.5),
     sigma ~ dexp(1)
-  ), data = data
-)
+  ), data = d)
+precis(m_5.3.1)
 
-model_5h3_2 <- quap(
+# 2. multiple regression of body weight predicted by avg food and groupsize and area
+
+m_5.3.2 <- quap(
   alist(
-    W ~ dnorm(mu, sigma),
-    mu <- a + bG*G + bT*T + bF*F,
-    a ~ dnorm(0, 0.2),
-    bG ~ dnorm(0, 0.5),
-    bT ~ dnorm(0, 0.5),
-    bF ~ dnorm(0, 0.5),
+    weight ~ dnorm(mu, sigma),
+    mu <- a +b_area*area + b_avgfood*avgfood + b_groupsize*groupsize,
+    a ~ dnorm(0,5),
+    b_avgfood ~ dnorm (0, 0.5),
+    b_area ~ dnorm (0, 0.5),
+    b_groupsize ~ dnorm(0,0.5),
     sigma ~ dexp(1)
-  ), data = data
-)
-
-precis(model_5h1_1)
-precis(model_5h1_2)
-precis(model_5h2)
-precis(model_5h3_1)
-precis(model_5h3_2)
-
-#question b not true for me?!?
+  ), data = d)
+precis(m_5.3.2)
+precis(m_5.2)
 
 ```
 
+*Answer:* a) According to the model, both average food and area size have a similar predictive effect on weight. Whereas average food has a slightly bigger effect, area size has a slightly smaller standard deviation. Therefore I think both of them could be argued to be used. If I would need to choose I would choose food, because it has the bigger effect. 
 
-**Defining our theory with explicit DAGs** - Katrine
+b) When both of the predictors are included, their effects are smaller with a larger standard deviation, because they explain a lot of the same variance. The variables are correlated with each other, so the model cannot estimate the effect size as precisely.  
+
+**Defining our theory with explicit DAGs** - by Katrine Tikjøb Wøldike
 Assume this DAG as an causal explanation of fox weight:
 
-```{r}
+```{r dag}
+
+data(foxes)
+
+#scaling
+foxes$avgfood <- scale(foxes$avgfood)
+foxes$area <- scale(foxes$area)
+foxes$weight <- scale(foxes$weight)
+foxes$groupsize <- scale(foxes$groupsize)
+
+
 pacman::p_load(dagitty,
                ggdag)
 dag <- dagitty('dag {
@@ -334,74 +368,122 @@ where A is area, F is avgfood,G is groupsize, and W is weight.
 
 1) Estimate the total causal influence of A on F. What effect would increasing the area of a territory have on the amount of food inside of it?
 
-```{r}
+```{r 1}
 
-adjustmentSets(dag, exposure = "A", outcome = "F")
-
-data$A <- data$T
-
-#no open doors?
-model_1 <- quap(
+# since there are no other variables influencing F, we'll make a simple model
+model_areafood <- quap(
   alist(
-    F ~ dnorm(mu, sigma),
-    mu <- a + bA*A,
-    a ~ dnorm(0, 0.2),
-    bA ~ dnorm(0, 0.5),
+    avgfood ~ dnorm(mu, sigma),
+    mu <- a + b * area,
+    a ~ dnorm(0.5, 0.5),
+    b ~ dnorm(0,1),
     sigma ~ dexp(1)
-  ), data = data
+  ), 
+  data = foxes
 )
-
-precis(model_1)
+precis( model_areafood )
 
 ```
+
+*Answer:* Increasing an area seems to also increase the amount of food inside of it with a small sigma, which makes sense also from a conceptual perspective.
 
 2) Infer the **total** causal effect of adding food F to a territory on the weight W of foxes. Can you calculate the causal effect by simulating an intervention on food?
 
-```{r}
+```{r 2}
 
-impliedConditionalIndependencies(dag)
+set.seed(123)
+# first making the model that we want to simulate from
+# Since we want the total causal effect
 
-model_2 <- quap(
+model_foodweight <- quap(
   alist(
-    #food model -> predicting food from area size
-    F ~ dnorm(mu_F, sigma_F),
-    mu_F <- aF + bA * A,
-    aF ~ dnorm(0, 0.2),
-    bA ~ dnorm(0, 0.5),
-    sigma_F ~ dexp(1),
-    
-    #group size model -> predicting group size from food
-    G ~ dnorm(mu_G, sigma_G),
-    mu_G <- aG + bFG * F,
-    aG ~ dnorm(0, 0.2),
-    bFG ~ dnorm(0, 0.5),
-    sigma_G ~ dexp(1),
-    
-    #weight model -> predicting weight from food and group size
-    W ~ dnorm(mu_W, sigma_W),
-    mu_W <- aW + bF * F + bG * G,
-    aW ~ dnorm(0, 0.2),
-    bF ~ dnorm(0, 0.5),
-    bG ~ dnorm(0, 0.5),
-    sigma_W ~ dexp(1)
-  ), data = data
+    weight ~ dnorm(mu, sigma),
+    mu <- a + bF * avgfood,
+    a ~ dnorm(0, 0.5),
+    bF ~ dnorm(0,1), # effect of food on weight
+    sigma ~ dexp(1)
+  ), 
+  data = foxes
 )
 
-precis(model_2)
-
-#total effect -> bF + bFG * bG
+precis(model_foodweight)
 
 ```
+
+*Answer:* Since it would make a lot of sense if more food lead to an increase in weight of the foxes, this model makes us suspect that there could be a masked relationship hidden somewhere in our structure.
+*We'll return to the intervention after next question:))*
 
 3) Infer the **direct** causal effect of adding food F to a territory on the weight W of foxes. In light of your estimates from this problem and the previous one, what do you think is going on with these foxes? 
 
-```{r}
+```{r 3}
 
-#bF from previous model?
+set.seed(123)
+# conditioning on groupsize to take away the indirect effect
+model_foodweight2 <- quap(
+  alist(
+    weight ~ dnorm(mu, sigma),
+    mu <- a + bF * avgfood + bG * groupsize,
+    a ~ dnorm(0, 10),
+    bF ~ dnorm(0,2), # effect of food on weight
+    bG ~ dnorm(0,2), # effect of group size on weight
+    sigma ~ dexp(1)
+  ),
+   data = foxes
+)
+precis(model_foodweight2)
+
+set.seed(123)
+# prepare a model for the simulation, implying our causal assumptions
+
+model_foodweight3 <- quap(
+  alist(
+    weight ~ dnorm(mu, sigma),
+    mu <- a + bF * avgfood + bG * groupsize,
+    a ~ dnorm(0, 10),
+    bF ~ dnorm(0,2), # effect of food on weight
+    bG ~ dnorm(0,2), # effect of group size on weight
+    sigma ~ dexp(1),
+    ## F -> G
+        groupsize ~ dnorm( mu_groupsize , sigmaG),
+        mu_groupsize <- aG + bFG*avgfood,
+        aG ~ dnorm( 0 , 0.2 ),
+        bFG ~ dnorm( 0 , 0.5 ),
+        sigmaG ~ dexp( 1 )
+  ), 
+  data = foxes
+)
+
+precis(model_foodweight3)
+
+# Simulating intervention
+# using the model from 3) because it's the only way this makes sense?
+f_seq <- seq( from=-2 , to=2 , length.out=30 )
+
+# prep data
+sim_dat <- data.frame( avgfood=f_seq )
+
+# simulate groupsize and then weight, using avgfood simulations
+s <- sim( model_foodweight3 , data=sim_dat , vars=c("groupsize","weight") )
+
+# display counterfactual predictions
+plot( sim_dat$avgfood , colMeans(s$weight) , ylim=c(-2,2) , type="l" ,
+    xlab="manipulated food" , ylab="counterfactual weight"  )
+shade( apply(s$weight,2,PI) , sim_dat$avgfood )
+mtext( "Total counterfactual effect of food in area on weight" )
+
+sim_dat <- data.frame( groupsize=seq(from=-2,to=2,length.out=30) , avgfood=0 )
+s <- sim( model_foodweight3 , data=sim_dat , vars="weight" )
+plot( sim_dat$groupsize , colMeans(s) , ylim=c(-2,2) , type="l" ,
+    xlab="manipulated groupsize" , ylab="counterfactual weight"  )
+shade( apply(s,2,PI) , sim_dat$groupsize )
+mtext( "Total counterfactual effect of groupsize on weight" )
 
 ```
 
-## Chapter 6: Investigating the Waffles and Divorces - Sári
+*Answer:* According to our model output, the direct effect of F on W is positive, whereas the indirect effect mediated by G is negative. In the first plot, part of the effect of F on W is mediated by G. It's only when we manually set the avgfood to 0, that the effect of groupsize gets to show itself.
+This makes sense if more food in the area leads to a growth in the fox groups, leading to more competition for the food, leading to lower weights.
+
+## Chapter 6: Investigating the Waffles and Divorces - by Sára Fernezelyi
 **6H1**. 
 Use the Waffle House data, data(WaffleDivorce), to find the total causal influence of number of Waffle Houses on divorce rate. Justify your model or models with a causal graph.
 
@@ -420,6 +502,7 @@ data$W <- scale(data$WaffleHouses)
 #causal graph
 library(dagitty)
 library(ggplot2)
+library(dplyr)
 print("S: if a state is southern, A: median age at marriage, D: divorce rate, M: marriage rate, W: number of Waffle Houses")
 dag_6h1 <- dagitty("dag {
                    A -> D
@@ -432,6 +515,8 @@ coordinates(dag_6h1) <- list(
   y = c(A = 3, S = 1, M = 2, W = 1, D = 3)
 )
 
+library(ggdag)
+tidy_dag <- tidy_dagitty(dag_6h1)
 ggplot(dag_6h1,
        aes(x = x, y = y, xend = xend, yend = yend)) +
   geom_dag_point(size = 20, shape = 20, color = "orange2") +
@@ -579,6 +664,5 @@ grid.arrange(plot1, plot2, plot3, nrow = 3)
 
 *Answer*:
 - From the first test we can see that median age and the number of Waffle Houses are independent form each other when controlling for the southernity of the state.
-- From the second test we can see that even when controlling for median age, number of Waffle Houses and marriage rate, sourthernity still has a significant effect on divorce reate. This suggest that we should have a direct relationship between S and D in our DAG graph.
-- from the third tast we can- see that marriage rate and the number of Waffle Houses are independent from each other when controllin for the southernity of the state.
-
+- From the second test we can see that even when controlling for median age, number of Waffle Houses and marriage rate, sourthernity still has a significant effect on divorce rate. This suggest that we should have a direct relationship between S and D in our DAG graph.
+- from the third test we can see that marriage rate and the number of Waffle Houses are independent from each other when controlling for the southernity of the state.
